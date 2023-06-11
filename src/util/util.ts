@@ -38,7 +38,7 @@ export async function deleteLocalFiles(files: Array<string>) {
   }
 }
 
-export function isUrlValid(url) {
+export function isUrlValid(url): boolean {
   var res = url.match(/(http(s)?:\/\/.)/g);
   if (res == null) return false;
   else return true;
