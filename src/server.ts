@@ -1,10 +1,10 @@
-import express from "express";
+import express, { Request, Response, Express } from "express";
 import bodyParser from "body-parser";
 import { filterImageFromURL, deleteLocalFiles, isUrlValid } from "./util/util";
 
 (async () => {
   // Init the Express application
-  const app = express();
+  const app: Express = express();
 
   // Set the network port
   const port = process.env.PORT || 8082;
@@ -19,26 +19,31 @@ import { filterImageFromURL, deleteLocalFiles, isUrlValid } from "./util/util";
 
   // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   /**************************************************************************** */
-  app.get("/:filteredimage?", async (req, res) => {
-    const { image_url } = req.query;
+  app.get("/:filteredimage?", async (req: Request, res: Response) => {
+    const { image_url } = req.query as { image_url: string };
     //    1. validate the image_url query
     if (image_url && !isUrlValid(image_url)) {
       res.status(422);
       res.send("The image_url invalid, please try again!");
     }
     //    2. call filterImageFromURL(image_url) to filter the image
-    const filterImage = await filterImageFromURL(image_url);
-    console.log(`filterImage`, filterImage);
-    //    3. send the resulting file in the response
-    res.sendFile(filterImage, (err) => {
-      if (err) {
-        res.status(422);
-        res.send(`Error: ${err}`);
-      } else {
-        // 4. deletes any files on the server on finish of the response
-        deleteLocalFiles([filterImage]);
-      }
-    });
+    try {
+      const filterImage = await filterImageFromURL(image_url);
+
+      //    3. send the resulting file in the response
+      res.sendFile(filterImage, (err) => {
+        if (err) {
+          res.status(422);
+          res.send(`Error: ${err}`);
+        } else {
+          // 4. deletes any files on the server on finish of the response
+          deleteLocalFiles([filterImage]);
+        }
+      });
+    } catch (error) {
+      res.status(422);
+      res.send(`Error: ${error}`);
+    }
   });
 
   //! END @TODO1
